@@ -1,54 +1,18 @@
-import express from 'express';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { readFileSync } from 'fs';
-import crypto from 'crypto';
-import dotenv from 'dotenv';
-import { initializeApp, getApps } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-dotenv.config();
-
-// Initialize Firebase
-const firebaseConfig = JSON.parse(
-  readFileSync(path.join(__dirname, 'firebase-applet-config.json'), 'utf8')
-);
-
-if (!getApps().length) {
-  initializeApp({
-    projectId: firebaseConfig.projectId,
-  });
-}
-
-const db = getFirestore();
-const app = express();
-const port = process.env.PORT || 8080;
-
-app.use(express.json());
-
-// Paystack Webhook
-app.post('/api/paystack/webhook', async (req, res) => {
-  const hash = crypto.createHmac('sha512', process.env.PAYSTACK_WEBHOOK_SECRET || '')
-    .update(JSON.stringify(req.body))
-    .digest('hex');
-
-  if (hash !== req.headers['x-paystack-signature']) {
-    return res.status(400).send('Invalid signature');
+{
+  "name": "fieldpay-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "tsx server.ts",
+    "build": "",
+    "dev": "tsx server.ts"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "firebase-admin": "^12.0.0",
+    "tsx": "^4.21.0",
+    "typescript": "~5.8.2",
+    "dotenv": "^16.0.0",
+    "axios": "^1.6.0"
   }
-
-  // Your existing logic for subscription/charge success goes here
-  res.sendStatus(200);
-});
-
-// Health Check (Very important for Firebase to see the app is alive)
-app.get('/', (req, res) => {
-  res.send('FieldPay Backend is Online');
-});
-
-// Start the server
-app.listen(port, '0.0.0.0', () => {
-  console.log(`Server is running on port ${port}`);
-});
+}
