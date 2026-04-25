@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
   "start": "tsx server.ts",
-  "build": "tsc", 
+  "build": "", 
   "dev": "tsx server.ts"
-  },
+},
   "dependencies": {
     "@base-ui/react": "^1.4.0",
     "@fontsource-variable/geist": "^5.2.8",
