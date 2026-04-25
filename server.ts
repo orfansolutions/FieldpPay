@@ -33,6 +33,11 @@ async function startServer() {
   const app = express();
   const port = process.env.PORT || 8080;
 
+  app.listen(port, '0.0.0.0', () => {
+    console.log(`Server is running on port ${port}`);
+  });
+  
+
   // Paystack Webhook
   app.post('/api/paystack/webhook', express.json(), async (req, res) => {
     const hash = crypto.createHmac('sha512', process.env.PAYSTACK_WEBHOOK_SECRET || '')
