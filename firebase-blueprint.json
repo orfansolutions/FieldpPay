@@ -1,0 +1,196 @@
+{
+  "entities": {
+    "Organisation": {
+      "title": "Organisation",
+      "description": "A company or farm entity using FieldPay",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "cipcRegistration": { "type": "string" },
+        "address": { "type": "string" },
+        "contactPerson": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string" },
+        "industry": { "type": "string" },
+        "trialStartDate": { "type": "string", "format": "date-time" },
+        "subscriptionStatus": { "type": "string", "enum": ["trialing", "active", "past_due", "canceled"] },
+        "uifPercentage": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "email", "trialStartDate", "subscriptionStatus"]
+    },
+    "User": {
+      "title": "User",
+      "description": "A staff member (Admin, Supervisor, QA)",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "supervisor", "qa"] },
+        "orgId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role", "orgId"]
+    },
+    "Department": {
+      "title": "Department",
+      "description": "A functional area within an organisation",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "payCycle": { "type": "string", "enum": ["weekly", "bi-weekly", "monthly"] },
+        "monthlyOption": { "type": "string", "enum": ["last_day", "specific_day"] },
+        "specificDay": { "type": "number" },
+        "weeklyStartDate": { "type": "string" },
+        "orgId": { "type": "string" }
+      },
+      "required": ["name", "payCycle", "orgId"]
+    },
+    "Activity": {
+      "title": "Activity",
+      "description": "Work activities and rates",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "subActivities": { "type": "array", "items": { "type": "string" } },
+        "wageRate": { "type": "number" },
+        "billingRate": { "type": "number" },
+        "orgId": { "type": "string" }
+      },
+      "required": ["name", "wageRate", "billingRate", "orgId"]
+    },
+    "Employee": {
+      "title": "Employee",
+      "description": "Workforce members",
+      "type": "object",
+      "properties": {
+        "firstName": { "type": "string" },
+        "lastName": { "type": "string" },
+        "idNumber": { "type": "string" },
+        "passportNumber": { "type": "string" },
+        "asylumNumber": { "type": "string" },
+        "departmentId": { "type": "string" },
+        "paymentMethod": { "type": "string", "enum": ["Cash", "EFT", "Cash Send", "PayShap"] },
+        "paymentDetails": { "type": "object" },
+        "verificationStatus": { "type": "object" },
+        "documents": { "type": "array" },
+        "isTerminated": { "type": "boolean" },
+        "terminationDate": { "type": "string" },
+        "orgId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["firstName", "lastName", "departmentId", "paymentMethod", "orgId"]
+    },
+    "Deduction": {
+      "title": "Deduction",
+      "description": "Employee deductions",
+      "type": "object",
+      "properties": {
+        "employeeId": { "type": "string" },
+        "name": { "type": "string" },
+        "amount": { "type": "number" },
+        "totalIntervals": { "type": "number" },
+        "remainingIntervals": { "type": "number" },
+        "firstPaymentDate": { "type": "string" },
+        "attachments": { "type": "array" },
+        "type": { "type": "string", "enum": ["statutory", "manual"] },
+        "orgId": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["employeeId", "name", "amount", "type", "orgId"]
+    },
+    "JobCard": {
+      "title": "JobCard",
+      "description": "Daily work records",
+      "type": "object",
+      "properties": {
+        "reference": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "client": { "type": "string" },
+        "site": { "type": "string" },
+        "activityId": { "type": "string" },
+        "subActivity": { "type": "string" },
+        "team": { "type": "array", "items": { "type": "string" } },
+        "startTime": { "type": "string" },
+        "endTime": { "type": "string" },
+        "wageMethod": { "type": "string", "enum": ["hours", "team_output", "individual_output"] },
+        "hoursWorked": { "type": "number" },
+        "output": { "type": "number" },
+        "status": { "type": "string", "enum": ["open", "filed", "submitted", "verified", "invoiced"] },
+        "creatorId": { "type": "string" },
+        "orgId": { "type": "string" },
+        "lastUpdatedBy": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["reference", "date", "client", "site", "activityId", "orgId", "creatorId"]
+    },
+    "PayrollPeriod": {
+      "title": "PayrollPeriod",
+      "description": "Payroll processing periods",
+      "type": "object",
+      "properties": {
+        "departmentId": { "type": "string" },
+        "startDate": { "type": "string" },
+        "endDate": { "type": "string" },
+        "status": { "type": "string", "enum": ["open", "processed", "rolled_over"] },
+        "orgId": { "type": "string" },
+        "processedAt": { "type": "string" },
+        "processedBy": { "type": "string" }
+      },
+      "required": ["departmentId", "startDate", "endDate", "status", "orgId"]
+    },
+    "Invoice": {
+      "title": "Invoice",
+      "description": "Customer invoices",
+      "type": "object",
+      "properties": {
+        "invoiceNumber": { "type": "string" },
+        "clientId": { "type": "string" },
+        "jobCardIds": { "type": "array", "items": { "type": "string" } },
+        "totalAmount": { "type": "number" },
+        "status": { "type": "string", "enum": ["draft", "sent", "paid"] },
+        "orgId": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["invoiceNumber", "clientId", "jobCardIds", "totalAmount", "status", "orgId"]
+    },
+    "Client": {
+      "title": "Client",
+      "description": "Customer entity",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "orgId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "orgId"]
+    },
+    "Site": {
+      "title": "Site",
+      "description": "Work site or block for a client",
+      "type": "object",
+      "properties": {
+        "clientId": { "type": "string" },
+        "name": { "type": "string" },
+        "orgId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["clientId", "name", "orgId"]
+    }
+  },
+  "firestore": {
+    "/organisations/{orgId}": { "schema": "Organisation", "description": "Organisation data" },
+    "/users/{userId}": { "schema": "User", "description": "User profiles" },
+    "/organisations/{orgId}/departments/{deptId}": { "schema": "Department", "description": "Departments" },
+    "/organisations/{orgId}/activities/{actId}": { "schema": "Activity", "description": "Activities" },
+    "/organisations/{orgId}/employees/{empId}": { "schema": "Employee", "description": "Employees" },
+    "/organisations/{orgId}/deductions/{dedId}": { "schema": "Deduction", "description": "Deductions" },
+    "/organisations/{orgId}/jobcards/{jcId}": { "schema": "JobCard", "description": "Job Cards" },
+    "/organisations/{orgId}/payrollPeriods/{ppId}": { "schema": "PayrollPeriod", "description": "Payroll Periods" },
+    "/organisations/{orgId}/invoices/{invId}": { "schema": "Invoice", "description": "Invoices" },
+    "/organisations/{orgId}/clients/{clientId}": { "schema": "Client", "description": "Clients" },
+    "/organisations/{orgId}/sites/{siteId}": { "schema": "Site", "description": "Sites" }
+  }
+}

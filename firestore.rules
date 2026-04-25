@@ -1,0 +1,158 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: organisations
+    // Fields: name, email, trialStartDate, subscriptionStatus, uifPercentage, createdAt
+    //
+    // Collection: users
+    // Fields: uid, email, displayName, role, orgId, createdAt
+    //
+    // Collection: organisations/{orgId}/employees
+    // Fields: firstName, lastName, idNumber, passportNumber, asylumNumber, departmentId, paymentMethod, paymentDetails, verificationStatus, documents, isTerminated, orgId, createdAt
+    //
+    // Collection: organisations/{orgId}/jobcards
+    // Fields: reference, date, category, clientId, siteId, activityId, subActivity, team, startTime, endTime, wageMethod, hoursWorked, output, status, creatorId, orgId, lastUpdatedBy, lastUpdatedAt, createdAt
+    //
+    // [Other collections follow similar orgId scoping]
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isOrgMember(orgId) {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/organisations/$(orgId)/members/$(request.auth.uid));
+    }
+
+    function getOrgData(orgId) {
+      return get(/databases/$(database)/documents/organisations/$(orgId)).data;
+    }
+
+    function isSubscriptionActive(orgId) {
+      let org = getOrgData(orgId);
+      return org.subscriptionStatus == 'active' || org.subscriptionStatus == 'trialing';
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && 
+             (
+               (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+                get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin') ||
+               (request.auth.token.email == "orfansolutions@gmail.com")
+             );
+    }
+
+    function isQA() {
+      return isAuthenticated() && 
+             (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'qa' || 
+              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidUser(data) {
+      return data.uid is string && 
+             data.email is string && isValidEmail(data.email) &&
+             data.role in ['admin', 'supervisor', 'qa', 'manager', 'operator'] &&
+             data.orgId is string;
+    }
+
+    function isValidEmployee(data) {
+      return data.firstName is string && data.firstName.size() < 100 &&
+             data.lastName is string && data.lastName.size() < 100 &&
+             data.orgId is string;
+    }
+
+    function isValidJobCard(data) {
+      return data.reference is string &&
+             data.date is string &&
+             data.orgId is string &&
+             data.creatorId is string;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    // Users Collection
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isAuthenticated() && isValidUser(request.resource.data) && request.auth.uid == userId;
+      allow update: if (isOwner(userId) && request.resource.data.role == resource.data.role) || isAdmin();
+    }
+
+    // Organisations Collection
+    match /organisations/{orgId} {
+      allow read: if isOrgMember(orgId) || isAdmin();
+      allow create: if isAuthenticated();
+      allow update: if (isOrgMember(orgId) && (getUserData().role == 'admin' || isQA())) || isAdmin();
+
+      // Members sub-collection
+      match /members/{memberId} {
+        allow read: if isOrgMember(orgId) || isAdmin();
+        allow create: if isAuthenticated() && 
+                      (
+                        (request.auth.uid == memberId) || 
+                        (isOrgMember(orgId) && getUserData().role == 'admin') ||
+                        isAdmin()
+                      );
+        allow update, delete: if (isOrgMember(orgId) && getUserData().role == 'admin') || isAdmin();
+      }
+
+      // Sub-collections (Departments, Activities, Employees, JobCards, etc.)
+      match /jobcards/{docId} {
+        allow read: if isOrgMember(orgId);
+        allow write: if isOrgMember(orgId) && isSubscriptionActive(orgId);
+      }
+
+      match /payroll/{docId} {
+        allow read: if isOrgMember(orgId);
+        allow write: if isOrgMember(orgId) && isSubscriptionActive(orgId);
+      }
+
+      match /{collectionName}/{docId} {
+        allow read: if isOrgMember(orgId);
+        allow write: if isOrgMember(orgId);
+      }
+    }
+
+    // Collection Group Rule for Members (CRITICAL for login/org switching)
+    match /{path=**}/members/{memberId} {
+      // Allow user to find any member doc where they are the subject (either by ID or by data)
+      allow read, list: if isAuthenticated() && (
+        request.auth.uid == memberId || 
+        (resource != null && request.auth.uid == resource.data.uid) ||
+        isAdmin()
+      );
+    }
+  }
+}

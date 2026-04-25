@@ -1,0 +1,89 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", "Helvetica Neue", Arial, sans-serif;
+  
+  --color-background: hsl(210 40% 98%);
+  --color-foreground: hsl(222 47% 11%);
+  
+  --color-card: #FFFFFF;
+  --color-card-foreground: hsl(222 47% 11%);
+  
+  --color-popover: #FFFFFF;
+  --color-popover-foreground: hsl(222 47% 11%);
+  
+  --color-primary: hsl(37 91% 55%);
+  --color-primary-foreground: #FFFFFF;
+  
+  --color-secondary: hsl(222 47% 11%);
+  --color-secondary-foreground: #FFFFFF;
+  
+  --color-muted: hsl(210 40% 96.1%);
+  --color-muted-foreground: hsl(215.4 16.3% 46.9%);
+  
+  --color-accent: hsl(210 40% 96.1%);
+  --color-accent-foreground: hsl(222.2 47.4% 11.2%);
+  
+  --color-destructive: hsl(0 84.2% 60.2%);
+  --color-destructive-foreground: hsl(210 40% 98%);
+  
+  --color-border: hsl(214.3 31.8% 91.4%);
+  --color-input: hsl(214.3 31.8% 91.4%);
+  --color-ring: hsl(37 91% 55%);
+
+  --radius-lg: 0.75rem;
+  --radius-md: calc(0.75rem - 2px);
+  --radius-sm: calc(0.75rem - 4px);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+    -webkit-tap-highlight-color: transparent;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Smooth scrolling for the whole document */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Ensure all scroll areas are smooth on iOS */
+.scroll-area, [data-radix-scroll-area-viewport] {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Custom scrollbar for a cleaner look */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #cbd5e1;
+}
+
+:root {
+  --sidebar-bg: hsl(222 47% 11%);
+  --sidebar-text: #E8EDE7;
+  --sidebar-accent: hsl(37 91% 55%);
+  --trial-bg: hsl(37 91% 55% / 0.1);
+  --trial-text: hsl(37 91% 55%);
+}
+
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
