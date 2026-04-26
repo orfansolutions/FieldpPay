@@ -1,0 +1,120 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuthenticated() { return request.auth != null; }
+    
+    function isAdmin() {
+      return isAuthenticated() && (
+        request.auth.token.get('email', '').lower() == "lonwabolumko@gmail.com" ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'Super User')
+      );
+    }
+
+    function getReqOrgId() {
+      let userPath = /databases/$(database)/documents/users/$(request.auth.uid);
+      return exists(userPath) ? get(userPath).data.get('organisationId', '') : '';
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    match /public/config {
+      allow read: if true;
+    }
+
+    match /taxConfigs/{year} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    match /users/{userId} {
+      allow get: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow list: if isAuthenticated() && (isAdmin() || resource.data.get('organisationId', '') == getReqOrgId());
+      allow create, update: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+    }
+
+    match /organisations/{orgId} {
+      allow read: if isAuthenticated() && (isAdmin() || resource.data.get('ownerUid', '') == request.auth.uid || getReqOrgId() == orgId);
+      allow create: if isAuthenticated() && request.resource.data.get('ownerUid', '') == request.auth.uid;
+      allow update: if isAuthenticated() && (isAdmin() || resource.data.get('ownerUid', '') == request.auth.uid);
+    }
+
+    // Explicit collections
+    match /departments/{id} {
+      allow read, list: if isAuthenticated() && (isAdmin() || resource.data.get('organisationId', '') == getReqOrgId());
+      allow create: if isAuthenticated() && (isAdmin() || request.resource.data.get('organisationId', '') == getReqOrgId());
+      allow update: if isAuthenticated() && (isAdmin() || resource.data.get('organisationId', '') == getReqOrgId());
+      allow delete: if isAuthenticated() && (isAdmin() || resource.data.get('organisationId', '') == getReqOrgId());
+    }
+    match /projects/{id} {
+      allow read, list: if isAuthenticated() && (isAdmin() || resource.data.get('organisationId', '') == getReqOrgId());
+      allow create: if isAuthenticated() && (isAdmin() || request.resource.data.get('organisationId', '') == getReqOrgId());
+      allow update: if isAuthenticated() && (isAdmin() || resource.data.get('organisationId', '') == getReqOrgId());
+      allow delete: if isAuthenticated() && (isAdmin() || resource.data.get('organisationId', '') == getReqOrgId());
+    }
+    match /contacts/{id} {
+      allow read, list: if isAuthenticated() && (isAdmin() || resource.data.get('organisationId', '') == getReqOrgId());
+      allow create: if isAuthenticated() && (isAdmin() || request.resource.data.get('organisationId', '') == getReqOrgId());
+      allow update: if isAuthenticated() && (isAdmin() || resource.data.get('organisationId', '') == getReqOrgId());
+      allow delete: if isAuthenticated() && (isAdmin() || resource.data.get('organisationId', '') == getReqOrgId());
+    }
+    match /requisitions/{id} {
+      allow read, list: if isAuthenticated() && (isAdmin() || resource.data.get('organisationId', '') == getReqOrgId());
+      allow create: if isAuthenticated() && (isAdmin() || request.resource.data.get('organisationId', '') == getReqOrgId());
+      allow update: if isAuthenticated() && (isAdmin() || resource.data.get('organisationId', '') == getReqOrgId());
+      allow delete: if isAuthenticated() && (isAdmin() || resource.data.get('organisationId', '') == getReqOrgId());
+    }
+    match /employees/{id} {
+      allow read, list: if isAuthenticated() && (isAdmin() || resource.data.get('organisationId', '') == getReqOrgId());
+      allow create: if isAuthenticated() && (isAdmin() || request.resource.data.get('organisationId', '') == getReqOrgId());
+      allow update: if isAuthenticated() && (isAdmin() || resource.data.get('organisationId', '') == getReqOrgId());
+      allow delete: if isAuthenticated() && (isAdmin() || resource.data.get('organisationId', '') == getReqOrgId());
+    }
+    match /payrollRuns/{id} {
+      allow read, list: if isAuthenticated() && (isAdmin() || resource.data.get('organisationId', '') == getReqOrgId());
+      allow create: if isAuthenticated() && (isAdmin() || request.resource.data.get('organisationId', '') == getReqOrgId());
+      allow update: if isAuthenticated() && (isAdmin() || resource.data.get('organisationId', '') == getReqOrgId());
+      allow delete: if isAuthenticated() && (isAdmin() || resource.data.get('organisationId', '') == getReqOrgId());
+    }
+    match /deductions/{id} {
+      allow read, list: if isAuthenticated() && (isAdmin() || resource.data.get('organisationId', '') == getReqOrgId());
+      allow create: if isAuthenticated() && (isAdmin() || request.resource.data.get('organisationId', '') == getReqOrgId());
+      allow update: if isAuthenticated() && (isAdmin() || resource.data.get('organisationId', '') == getReqOrgId());
+      allow delete: if isAuthenticated() && (isAdmin() || resource.data.get('organisationId', '') == getReqOrgId());
+    }
+    match /recurringCosts/{id} {
+      allow read, list: if isAuthenticated() && (isAdmin() || resource.data.get('organisationId', '') == getReqOrgId());
+      allow create: if isAuthenticated() && (isAdmin() || request.resource.data.get('organisationId', '') == getReqOrgId());
+      allow update: if isAuthenticated() && (isAdmin() || resource.data.get('organisationId', '') == getReqOrgId());
+      allow delete: if isAuthenticated() && (isAdmin() || resource.data.get('organisationId', '') == getReqOrgId());
+    }
+    match /paymentCycles/{id} {
+      allow read, list: if isAuthenticated() && (isAdmin() || resource.data.get('organisationId', '') == getReqOrgId());
+      allow create: if isAuthenticated() && (isAdmin() || request.resource.data.get('organisationId', '') == getReqOrgId());
+      allow update: if isAuthenticated() && (isAdmin() || resource.data.get('organisationId', '') == getReqOrgId());
+      allow delete: if isAuthenticated() && (isAdmin() || resource.data.get('organisationId', '') == getReqOrgId());
+    }
+    match /publicHolidays/{id} {
+      allow read, list: if isAuthenticated() && (isAdmin() || resource.data.get('organisationId', '') == getReqOrgId());
+      allow create: if isAuthenticated() && (isAdmin() || request.resource.data.get('organisationId', '') == getReqOrgId());
+      allow update: if isAuthenticated() && (isAdmin() || resource.data.get('organisationId', '') == getReqOrgId());
+      allow delete: if isAuthenticated() && (isAdmin() || resource.data.get('organisationId', '') == getReqOrgId());
+    }
+    match /chartOfAccounts/{id} {
+      allow read, list: if isAuthenticated() && (isAdmin() || resource.data.get('organisationId', '') == getReqOrgId());
+      allow create: if isAuthenticated() && (isAdmin() || request.resource.data.get('organisationId', '') == getReqOrgId());
+      allow update: if isAuthenticated() && (isAdmin() || resource.data.get('organisationId', '') == getReqOrgId());
+      allow delete: if isAuthenticated() && (isAdmin() || resource.data.get('organisationId', '') == getReqOrgId());
+    }
+    match /invites/{id} {
+      allow read, list: if isAuthenticated() && (isAdmin() || resource.data.get('organisationId', '') == getReqOrgId());
+      allow create: if isAuthenticated() && (isAdmin() || request.resource.data.get('organisationId', '') == getReqOrgId());
+      allow update: if isAuthenticated() && (isAdmin() || resource.data.get('organisationId', '') == getReqOrgId());
+      allow delete: if isAuthenticated() && (isAdmin() || resource.data.get('organisationId', '') == getReqOrgId());
+    }
+  }
+}

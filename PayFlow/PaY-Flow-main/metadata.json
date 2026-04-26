@@ -1,0 +1,7 @@
+{
+  "name": "PaY Flow",
+  "description": "Payment Requisition and Expense Approval system for organisations in South Africa.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

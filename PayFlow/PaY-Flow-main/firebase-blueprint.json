@@ -1,0 +1,288 @@
+{
+  "entities": {
+    "organisation": {
+      "title": "Organisation",
+      "description": "The top-level organisation profile.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "cipcNumber": { "type": "string" },
+        "address": { "type": "string" },
+        "telephone": { "type": "string" },
+        "financialYear": {
+          "type": "object",
+          "properties": {
+            "startDate": { "type": "string", "format": "date" },
+            "endDate": { "type": "string", "format": "date" }
+          }
+        },
+        "ownerUid": { "type": "string" }
+      },
+      "required": ["name", "ownerUid"]
+    },
+    "user": {
+      "title": "User",
+      "description": "A user within an organisation.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["Super User", "CEO/CFO", "Financial Manager", "Requester"] },
+        "organisationId": { "type": "string" },
+        "displayName": { "type": "string" }
+      },
+      "required": ["uid", "email", "role", "organisationId"]
+    },
+    "department": {
+      "title": "Department",
+      "description": "A department within an organisation.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "organisationId": { "type": "string" },
+        "yearlyBudget": { "type": "number" }
+      },
+      "required": ["name", "organisationId"]
+    },
+    "chartOfAccount": {
+      "title": "Chart of Account",
+      "description": "A chart of account used organisation-wide.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "organisationId": { "type": "string" }
+      },
+      "required": ["name", "organisationId"]
+    },
+    "project": {
+      "title": "Project",
+      "description": "A project linked to departments and clients.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "startDate": { "type": "string", "format": "date" },
+        "endDate": { "type": "string", "format": "date" },
+        "organisationId": { "type": "string" },
+        "departmentIds": { "type": "array", "items": { "type": "string" } },
+        "clientId": { "type": "string" },
+        "status": { "type": "string", "enum": ["Open", "Completed"] },
+        "totalBudget": { "type": "number" },
+        "phases": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "name": { "type": "string" },
+              "budget": { "type": "number" },
+              "subPhases": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": { "type": "string" },
+                    "budget": { "type": "number" },
+                    "chartOfAccountBudgets": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "chartOfAccountId": { "type": "string" },
+                          "amount": { "type": "number" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "required": ["name", "organisationId"]
+    },
+    "contact": {
+      "title": "Contact",
+      "description": "A vendor or client contact.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "contactNumber": { "type": "string" },
+        "bankDetails": {
+          "type": "object",
+          "properties": {
+            "type": { "type": "string", "enum": ["Bank Account", "Cash", "Cash Send"] },
+            "bankName": { "type": "string" },
+            "accountNumber": { "type": "string" },
+            "branchCode": { "type": "string" },
+            "cellphoneNumber": { "type": "string" }
+          }
+        },
+        "organisationId": { "type": "string" },
+        "attachments": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["name", "organisationId"]
+    },
+    "requisition": {
+      "title": "Payment Requisition",
+      "description": "A request for payment.",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string", "format": "date" },
+        "invoiceNumber": { "type": "string" },
+        "contactId": { "type": "string" },
+        "description": { "type": "string" },
+        "chartOfAccountId": { "type": "string" },
+        "projectId": { "type": "string" },
+        "phase": { "type": "string" },
+        "subPhase": { "type": "string" },
+        "amount": { "type": "number" },
+        "status": { "type": "string", "enum": ["Draft", "Pending", "Submitted", "Partially Approved", "Approved", "Rejected"] },
+        "rejectionReason": { "type": "string" },
+        "organisationId": { "type": "string" },
+        "createdBy": { "type": "string" },
+        "attachments": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["invoiceNumber", "contactId", "amount", "status", "organisationId", "createdBy"]
+    },
+    "employee": {
+      "title": "Employee",
+      "description": "An employee profile.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "surname": { "type": "string" },
+        "departmentId": { "type": "string" },
+        "chartOfAccountId": { "type": "string" },
+        "grossSalary": { "type": "number" },
+        "paymentDateType": { "type": "string", "enum": ["Last Working Day", "Custom"] },
+        "customPaymentDay": { "type": "number" },
+        "isUifContributor": { "type": "boolean" },
+        "organisationId": { "type": "string" },
+        "status": { "type": "string", "enum": ["Active", "Inactive", "Terminated"] },
+        "medicalAidDependants": { "type": "number" },
+        "dateOfBirth": { "type": "string", "format": "date" },
+        "contributions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": { "type": "string", "enum": ["Medical Aid", "Retirement Annuity", "Other"] },
+              "description": { "type": "string" },
+              "employeeAmount": { "type": "number" },
+              "employerAmount": { "type": "number" },
+              "isFringeBenefit": { "type": "boolean" }
+            }
+          }
+        }
+      },
+      "required": ["name", "surname", "grossSalary", "organisationId"]
+    },
+    "payrollRun": {
+      "title": "Payroll Run",
+      "description": "A monthly payroll batch.",
+      "type": "object",
+      "properties": {
+        "month": { "type": "string" },
+        "organisationId": { "type": "string" },
+        "status": { "type": "string", "enum": ["Draft", "Submitted", "Approved"] },
+        "totalGross": { "type": "number" },
+        "totalPaye": { "type": "number" },
+        "totalUif": { "type": "number" },
+        "totalNet": { "type": "number" },
+        "paymentDate": { "type": "string", "format": "date" },
+        "records": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "employeeId": { "type": "string" },
+              "name": { "type": "string" },
+              "surname": { "type": "string" },
+              "grossSalary": { "type": "number" },
+              "paye": { "type": "number" },
+              "uif": { "type": "number" },
+              "netSalary": { "type": "number" },
+              "taxableRemuneration": { "type": "number" },
+              "fringeBenefits": { "type": "number" },
+              "allowableDeductions": { "type": "number" },
+              "medicalTaxCredits": { "type": "number" },
+              "sdl": { "type": "number" },
+              "employerUif": { "type": "number" }
+            }
+          }
+        }
+      },
+      "required": ["month", "organisationId", "status"]
+    },
+    "taxConfig": {
+      "title": "Tax Configuration",
+      "description": "SARS tax rates and thresholds for a specific year.",
+      "type": "object",
+      "properties": {
+        "year": { "type": "string" },
+        "primaryRebate": { "type": "number" },
+        "secondaryRebate": { "type": "number" },
+        "tertiaryRebate": { "type": "number" },
+        "taxThresholdUnder65": { "type": "number" },
+        "taxThreshold65To75": { "type": "number" },
+        "taxThreshold75Plus": { "type": "number" },
+        "retirementLimitPercentage": { "type": "number" },
+        "retirementLimitCap": { "type": "number" },
+        "uifRate": { "type": "number" },
+        "uifCap": { "type": "number" },
+        "sdlRate": { "type": "number" },
+        "sdlThreshold": { "type": "number" },
+        "brackets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "min": { "type": "number" },
+              "max": { "type": "number" },
+              "baseTax": { "type": "number" },
+              "rate": { "type": "number" }
+            }
+          }
+        },
+        "medicalTaxCredits": {
+          "type": "object",
+          "properties": {
+            "mainMember": { "type": "number" },
+            "firstDependant": { "type": "number" },
+            "additionalDependant": { "type": "number" }
+          }
+        }
+      },
+      "required": ["year"]
+    },
+    "invite": {
+      "title": "Invite",
+      "description": "A pending invitation to join an organisation.",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["Super User", "CEO/CFO", "Financial Manager", "Requester"] },
+        "organisationId": { "type": "string" },
+        "organisationName": { "type": "string" },
+        "invitedBy": { "type": "string" },
+        "status": { "type": "string", "enum": ["Pending", "Accepted"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["email", "role", "organisationId", "status"]
+    }
+  },
+  "firestore": {
+    "/organisations/{orgId}": { "schema": "organisation", "description": "Organisation profiles" },
+    "/users/{userId}": { "schema": "user", "description": "User profiles" },
+    "/departments/{deptId}": { "schema": "department", "description": "Departments" },
+    "/chartOfAccounts/{ccId}": { "schema": "chartOfAccount", "description": "Chart of accounts" },
+    "/projects/{projId}": { "schema": "project", "description": "Projects" },
+    "/contacts/{contactId}": { "schema": "contact", "description": "Contacts" },
+    "/requisitions/{reqId}": { "schema": "requisition", "description": "Payment requisitions" },
+    "/employees/{empId}": { "schema": "employee", "description": "Employee profiles" },
+    "/payrollRuns/{runId}": { "schema": "payrollRun", "description": "Payroll runs" },
+    "/taxConfigs/{year}": { "schema": "taxConfig", "description": "Tax configurations" },
+    "/invites/{inviteId}": { "schema": "invite", "description": "Pending invitations" }
+  }
+}
